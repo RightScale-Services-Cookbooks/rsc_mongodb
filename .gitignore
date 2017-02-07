@@ -14,5 +14,5 @@ Gemfile.lock
 bin/*
 .bundle/*
 .kitchen/*
-
+syntaxcache/
 .kitchen.local.yml
