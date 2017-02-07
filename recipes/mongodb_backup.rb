@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Cookbook Name:: rsc_mongodb
 # Recipe:: mongodb_backup

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Cookbook Name:: rsc_mongodb
 # Recipe:: volume_default
@@ -17,7 +18,7 @@
 # limitations under the License.
 
 # if restoring from backups , then enable the volume use
-if node[:rsc_mongodb][:use_storage] == 'true' || node[:rsc_mongodb][:restore_from_backup] == 'true'
+if node['rsc_mongodb']['use_storage'] == 'true' || node['rsc_mongodb']['restore_from_backup'] == 'true'
   node.default['rs-storage']['device']['nickname'] = (node['rsc_mongodb']['volume_nickname']).to_s
   node.default['rs-storage']['device']['volume_size'] = (node['rsc_mongodb']['volume_size']).to_s
   node.default['rs-storage']['device']['filesystem'] = (node['rsc_mongodb']['volume_filesystem']).to_s
@@ -27,7 +28,7 @@ if node[:rsc_mongodb][:use_storage] == 'true' || node[:rsc_mongodb][:restore_fro
   include_recipe 'rightscale_volume::default'
 
   # add the restore lineage here if you'd like to create a volume from a snapshot.
-  if node[:rsc_mongodb][:restore_from_backup] == 'true'
+  if node['rsc_mongodb']['restore_from_backup'] == 'true'
     Chef::Log.info "Restoring from  lineage: #{node['rsc_mongodb']['backup_lineage_name']}"
     node.default['rs-storage']['restore']['lineage'] = (node['rsc_mongodb']['restore_lineage_name']).to_s
   end
@@ -35,7 +36,7 @@ if node[:rsc_mongodb][:use_storage] == 'true' || node[:rsc_mongodb][:restore_fro
   include_recipe 'rs-storage::volume'
 
   # when using volumes we set the datadir to the mount point.
-  node.default[:mongodb][:config][:dbpath] = (node.default['rs-storage']['device']['mount_point']).to_s
+  node.default['mongodb']['config']['dbpath'] = (node.default['rs-storage']['device']['mount_point']).to_s
 
 end
 

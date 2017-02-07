@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Cookbook Name:: rsc_mongodb
 # Recipe:: default
@@ -23,7 +24,7 @@ end
 
 include_recipe 'build-essential::default'
 
-node.default[:mongodb][:config][:replSet] = (node[:rsc_mongodb][:replicaset]).to_s
+node.default['mongodb']['config']['replSet'] = (node['rsc_mongodb']['replicaset']).to_s
 
 # fix bug with name change mongodb vs mongod .conf
 node.override['mongodb']['default_init_name'] = 'mongod'
@@ -44,11 +45,10 @@ Chef::Log.info 'Running the mongodb installer'
 include_recipe 'mongodb::default'
 
 # don't tag host if recovering from backup
-if node['rsc_mongodb']['restore_from_backup'] != 'true'
-  # Tag host with replica set name
-  machine_tag "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}" do
-    action :create
-  end
+# Tag host with replica set name
+machine_tag "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}" do
+  action :create
+  only_if node['rsc_mongodb']['restore_from_backup'] != 'true'
 end
 
 # if we are using volumes, set up backups on all nodes.

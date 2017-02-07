@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 name             'rsc_mongodb'
 maintainer       'RightScale Inc'
 maintainer_email 'premium@rightscale.com'
@@ -5,6 +6,10 @@ license          'Apache 2.0'
 description      'Installs/Configures Mongo DB'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          '2.0.0'
+chef_version '>= 12.0' if respond_to?(:chef_version)
+issues_url 'https://github.com/RightScale-Services-Cookbooks/rsc_mondodb/issues'
+source_url 'https://github.com/RightScale-Services-Cookbooks/rsc_mondodb'
+
 
 depends 'build-essential'
 depends 'mongodb'

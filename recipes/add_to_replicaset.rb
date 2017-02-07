@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Cookbook Name:: rsc_mongodb
 # Recipe:: add_to_replicaset
@@ -28,12 +29,12 @@ end
 
 include_recipe 'machine_tag::default'
 
-machine_tag "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}" do
+machine_tag "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}" do
   action :delete
 end
 
 Chef::Log.info 'Searching for mongodb nodes'
-replicaset_hosts = tag_search(node, "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}")
+replicaset_hosts = tag_search(node, "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}")
 
 ip_address = replicaset_hosts[1]['server:private_ip_0'].first.value
 Chef::Log.info "Host ip: #{ip_address}"
@@ -41,16 +42,16 @@ Chef::Log.info "Host ip: #{ip_address}"
 ## initiate replica set , replica set name is already in the config
 
 file '/tmp/mongoconfig.js' do
-  content "rs.add('#{node[:cloud][:private_ips][0]}');"
+  content "rs.add('#{node['cloud']['private_ips'][0]}');"
 end
 
 execute 'configure_mongo' do
-  command "/usr/bin/mongo --host #{node[:rsc_mongodb][:replicaset]}/#{ip_address} /tmp/mongoconfig.js"
+  command "/usr/bin/mongo --host #{node['rsc_mongodb']['replicaset']}/#{ip_address} /tmp/mongoconfig.js"
 end
 
 Chef::Log.info "Node's Current IP: #{node['cloud']['private_ips'][0]}"
 
-machine_tag "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}" do
+machine_tag "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}" do
   action :create
 end
 
