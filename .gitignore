@@ -16,3 +16,4 @@ bin/*
 .kitchen/*
 syntaxcache/
 .kitchen.local.yml
+berks-cookbooks/
