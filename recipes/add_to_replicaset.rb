@@ -16,10 +16,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-marker "recipe_start"
+marker 'recipe_start'
 
-marker "recipe_start_rightscale" do
-  template "rightscale_audit_entry.erb"
+marker 'recipe_start_rightscale' do
+  template 'rightscale_audit_entry.erb'
 end
 
 class Chef::Recipe
@@ -29,7 +29,7 @@ end
 include_recipe 'machine_tag::default'
 
 machine_tag "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}" do
-   action :delete
+  action :delete
 end
 
 Chef::Log.info 'Searching for mongodb nodes'
@@ -51,28 +51,28 @@ end
 Chef::Log.info "Node's Current IP: #{node['cloud']['private_ips'][0]}"
 
 machine_tag "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}" do
-   action :create
+  action :create
 end
 
-#Backup the restored node only after it has joined the replicaset
+# Backup the restored node only after it has joined the replicaset
 
 if node['rsc_mongodb']['restore_from_backup'] == 'true'
 
-Chef::Log.info "Volumes are being used. Adding backup script and cronjob"
+  Chef::Log.info 'Volumes are being used. Adding backup script and cronjob'
 
-    #create the backup script.
-    template '/usr/bin/mongodb_backup.sh' do
-      source 'mongodb_backup.erb'
-      owner 'root'
-      group 'root'
-      mode '0755'
-    end
+  # create the backup script.
+  template '/usr/bin/mongodb_backup.sh' do
+    source 'mongodb_backup.erb'
+    owner 'root'
+    group 'root'
+    mode '0755'
+  end
 
-    cron 'mongodb-backup' do
-      minute  '0'
-      hour    '*/1'
-      command '/usr/bin/mongodb_backup.sh'
-      user    'root'
-    end
+  cron 'mongodb-backup' do
+    minute  '0'
+    hour    '*/1'
+    command '/usr/bin/mongodb_backup.sh'
+    user    'root'
+  end
 
 end

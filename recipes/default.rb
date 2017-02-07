@@ -15,25 +15,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-marker "recipe_start"
+marker 'recipe_start'
 
-marker "recipe_start_rightscale" do
-  template "rightscale_audit_entry.erb"
+marker 'recipe_start_rightscale' do
+  template 'rightscale_audit_entry.erb'
 end
 
 include_recipe 'build-essential::default'
 
-node.default[:mongodb][:config][:replSet] = "#{node[:rsc_mongodb][:replicaset]}"
+node.default[:mongodb][:config][:replSet] = (node[:rsc_mongodb][:replicaset]).to_s
 
-#fix bug with name change mongodb vs mongod .conf
+# fix bug with name change mongodb vs mongod .conf
 node.override['mongodb']['default_init_name'] = 'mongod'
-
-
 
 include_recipe 'mongodb::mongodb_org_repo'
 include_recipe 'machine_tag::default'
 
-file "/etc/apt/sources.list.d/mongodb-org-3.0.list" do
+file '/etc/apt/sources.list.d/mongodb-org-3.0.list' do
   action :create_if_missing
   content 'deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse'
 end
@@ -42,40 +40,37 @@ execute 'update repositories' do
   command 'apt -y update'
 end
 
-Chef::Log.info "Running the mongodb installer"
+Chef::Log.info 'Running the mongodb installer'
 include_recipe 'mongodb::default'
 
-
-
-#don't tag host if recovering from backup
+# don't tag host if recovering from backup
 if node['rsc_mongodb']['restore_from_backup'] != 'true'
-      #Tag host with replica set name
-      machine_tag "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}" do
-         action :create
-      end
+  # Tag host with replica set name
+  machine_tag "mongodb:replicaset=#{node[:rsc_mongodb][:replicaset]}" do
+    action :create
+  end
 end
 
-
-#if we are using volumes, set up backups on all nodes.
-#the cron script will check if it running on a secondary
+# if we are using volumes, set up backups on all nodes.
+# the cron script will check if it running on a secondary
 if node['rsc_mongodb']['use_storage'] == 'true' && node['rsc_mongodb']['restore_from_backup'] != 'true'
 
-Chef::Log.info "Volumes are being used. Adding backup script and cronjob"
+  Chef::Log.info 'Volumes are being used. Adding backup script and cronjob'
 
-    #create the backup script.
-    template '/usr/bin/mongodb_backup.sh' do
-      source 'mongodb_backup.erb'
-      owner 'root'
-      group 'root'
-      mode '0755'
-    end
+  # create the backup script.
+  template '/usr/bin/mongodb_backup.sh' do
+    source 'mongodb_backup.erb'
+    owner 'root'
+    group 'root'
+    mode '0755'
+  end
 
-    cron 'mongodb-backup' do
-      minute  '0'
-      hour    '*/1'
-      command 'sleep $[RANDOM%300];/usr/bin/mongodb_backup.sh'
-      user    'root'
-    end
-#mongo --quiet --eval "d=db.isMaster(); print( d['ismaster'] );"
-#if true , exit. false run the backups.
+  cron 'mongodb-backup' do
+    minute  '0'
+    hour    '*/1'
+    command 'sleep $[RANDOM%300];/usr/bin/mongodb_backup.sh'
+    user    'root'
+  end
+  # mongo --quiet --eval "d=db.isMaster(); print( d['ismaster'] );"
+  # if true , exit. false run the backups.
 end
