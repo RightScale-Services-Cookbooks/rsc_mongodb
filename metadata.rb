@@ -10,7 +10,6 @@ chef_version '>= 12.0' if respond_to?(:chef_version)
 issues_url 'https://github.com/RightScale-Services-Cookbooks/rsc_mondodb/issues'
 source_url 'https://github.com/RightScale-Services-Cookbooks/rsc_mondodb'
 
-
 depends 'build-essential'
 depends 'mongodb'
 depends 'machine_tag'
