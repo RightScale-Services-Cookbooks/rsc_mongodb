@@ -39,7 +39,7 @@ platforms:
 
 suites:
 - name: default
-  run_list: ['recipe[rsc_mongo::default]']
+  run_list: ['recipe[rsc_mongodb::default]']
   attributes:
     cloud:
       provider: vagrant
