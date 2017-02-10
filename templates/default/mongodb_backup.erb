@@ -1,9 +1,34 @@
 #!/bin/bash -ex
 
+export chef_dir=$HOME/.chef
+mkdir -p $chef_dir
+
+#get instance data to pass to chef server
+instance_data=$(rsc --rl10 cm15 index_instance_session  /api/sessions/instance)
+instance_uuid=$(echo "$instance_data" | rsc --x1 '.monitoring_id' json)
+instance_id=$(echo "$instance_data" | rsc --x1 '.resource_uid' json)
+monitoring_server=$(echo "$instance_data" | rsc --x1 '.monitoring_server' json)
+
+if [ -e $chef_dir/backups.json ]; then
+  rm -f $chef_dir/backups.json
+fi
+
+cat > $chef_dir/backups.json <<-EOF
+{
+  "name": "${HOSTNAME}",
+  "rightscale":{
+    "instance_uuid":"$instance_uuid",
+    "instance_id":"$instance_id"
+  },
+  "apt": {
+    "compile_time_update": "true"
+  },
+  "run_list": ["recipe[apt]","recipe[rsc_mongodb::mongodb_backup]","recipe[rsc_mongodb]"]
+}
+EOF
+
 IS_MASTER=`mongo --quiet --eval "d=db.isMaster(); print( d['ismaster'] );"`
 
 if [ "$IS_MASTER" != 'true' ]; then
-
-	rs_run_recipe --name 'rsc_mongodb::mongodb_backup'
-
+	chef-client -j $chef_dir/backups.json
 fi
