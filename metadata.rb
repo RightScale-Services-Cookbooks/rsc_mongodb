@@ -104,3 +104,19 @@ attribute 'rsc_mongodb/restore_lineage_name',
   category: 'MongoDB',
   type: 'string',
   recipes: ['rsc_mongodb::volume_default']
+
+attribute 'rsc_mongodb/user',
+  display_name: 'MongoDB User',
+  description: 'user to authenticate with',
+  required: 'optional',
+  category: 'MongoDB',
+  type: 'string',
+  recipes: ['rsc_mongodb::volume_default','rsc_mongodb::add_to_replicaset']
+
+attribute 'rsc_mongodb/password',
+  display_name: 'MongoDB Password',
+  description: 'password to authenticate with',
+  required: 'optional',
+  category: 'MongoDB',
+  type: 'string',
+  recipes: ['rsc_mongodb::volume_default','rsc_mongodb::add_to_replicaset']

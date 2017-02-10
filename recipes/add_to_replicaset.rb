@@ -46,7 +46,7 @@ file '/tmp/mongoconfig.js' do
 end
 
 execute 'configure_mongo' do
-  command "/usr/bin/mongo --host #{node['rsc_mongodb']['replicaset']}/#{ip_address} /tmp/mongoconfig.js"
+  command "/usr/bin/mongo -u #{node['rsc_mongodb']['user']} -p #{node['rsc_mongodb']['password']} --authenticationDatabase admin --host #{node['rsc_mongodb']['replicaset']}/#{ip_address} /tmp/mongoconfig.js"
 end
 
 Chef::Log.info "Node's Current IP: #{node['cloud']['private_ips'][0]}"
