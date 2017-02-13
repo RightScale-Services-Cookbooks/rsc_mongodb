@@ -56,12 +56,12 @@ file '/tmp/mongoconfig.js' do
   content "rs.initiate(#{rs_config});"
 end
 
-Chef::Log.info "executing replica set"
+Chef::Log.info 'executing replica set'
 execute 'configure_mongo' do
   command '/usr/bin/mongo /tmp/mongoconfig.js'
 end
 
-Chef::Log.info "adding users to replica set"
+Chef::Log.info 'adding users to replica set'
 # since we are using keyfile we need client side authentication
 ruby_block 'add-admin-user' do
   block do
@@ -78,6 +78,6 @@ ruby_block 'add-admin-user' do
   end
 end
 
-machine_tag "mongodb:#{node['rsc_mongodb']['replicaset']}=PRIMARY" do
+machine_tag "mongodb:PRIMARY=#{node['rsc_mongodb']['replicaset']}" do
   action :create
 end

@@ -29,61 +29,64 @@ end
 
 include_recipe 'machine_tag::default'
 
-machine_tag "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}" do
-  action :delete
-end
-
 Chef::Log.info 'Searching for mongodb nodes'
-replicaset_hosts = tag_search(node, "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']} mongodb:#{node['rsc_mongodb']['replicaset']}=PRIMARY")
+replicaset_hosts = tag_search(node, %W(mongodb:replicaset=#{node['rsc_mongodb']['replicaset']} mongodb:PRIMARY=#{node['rsc_mongodb']['replicaset']}), match_all: true)
 
-ip_address = replicaset_hosts[1]['server:private_ip_0'].first.value
-Chef::Log.info "Host ip: #{ip_address}"
+Chef::Log.info replicaset_hosts
+if replicaset_hosts.nil?
 
-## initiate replica set , replica set name is already in the config
+  Chef::Log.info 'no Hosts'
+else
+  first_server = replicaset_hosts[0]
+  ip_address = first_server['server:private_ip_0'].first.value unless first_server.nil?
+  Chef::Log.info "Host ip: #{ip_address}"
 
-file '/tmp/mongoconfig.js' do
-  content "rs.add('#{node['cloud']['private_ips'][0]}');"
-end
+  ## initiate replica set , replica set name is already in the config
 
-execute 'configure_mongo' do
-  command "/usr/bin/mongo -u #{node['rsc_mongodb']['user']} -p #{node['rsc_mongodb']['password']} --authenticationDatabase admin --host #{node['rsc_mongodb']['replicaset']}/#{ip_address} /tmp/mongoconfig.js"
-end
-
-service 'mongodb' do
-  action :stop
-end
-
-execute 'rm -fr /var/lib/mongodb/*'
-
-service 'mongodb' do
-  action :start
-end
-
-Chef::Log.info "Node's Current IP: #{node['cloud']['private_ips'][0]}"
-
-machine_tag "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}" do
-  action :create
-end
-
-# Backup the restored node only after it has joined the replicaset
-
-if node['rsc_mongodb']['restore_from_backup'] == 'true'
-
-  Chef::Log.info 'Volumes are being used. Adding backup script and cronjob'
-
-  # create the backup script.
-  template '/usr/bin/mongodb_backup.sh' do
-    source 'mongodb_backup.erb'
-    owner 'root'
-    group 'root'
-    mode '0755'
+  file '/tmp/mongoconfig.js' do
+    content "rs.add('#{node['cloud']['private_ips'][0]}');"
   end
 
-  cron 'mongodb-backup' do
-    minute  '0'
-    hour    '*/1'
-    command '/usr/bin/mongodb_backup.sh'
-    user    'root'
+  execute 'configure_mongo' do
+    command "/usr/bin/mongo -u #{node['rsc_mongodb']['user']} -p #{node['rsc_mongodb']['password']} --authenticationDatabase admin --host #{node['rsc_mongodb']['replicaset']}/#{ip_address} /tmp/mongoconfig.js"
   end
 
+  service 'mongodb' do
+    action :stop
+  end
+
+  execute 'rm -fr /var/lib/mongodb/*'
+
+  service 'mongodb' do
+    action :start
+  end
+
+  Chef::Log.info "Node's Current IP: #{node['cloud']['private_ips'][0]}"
+
+  machine_tag "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}" do
+    action :create
+  end
+
+  # Backup the restored node only after it has joined the replicaset
+
+  if node['rsc_mongodb']['restore_from_backup'] == 'true'
+
+    Chef::Log.info 'Volumes are being used. Adding backup script and cronjob'
+
+    # create the backup script.
+    template '/usr/bin/mongodb_backup.sh' do
+      source 'mongodb_backup.erb'
+      owner 'root'
+      group 'root'
+      mode '0755'
+    end
+
+    cron 'mongodb-backup' do
+      minute  '0'
+      hour    '*/1'
+      command '/usr/bin/mongodb_backup.sh'
+      user    'root'
+    end
+
+  end
 end
