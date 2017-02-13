@@ -26,7 +26,7 @@ include_recipe 'build-essential::default'
 
 node.default['mongodb']['config']['replSet'] = (node['rsc_mongodb']['replicaset']).to_s
 
-#since we are using keyfile we need client side authentication
+# since we are using keyfile we need client side authentication
 node.default['mongodb']['mongos_create_admin'] = true
 node.default['mongodb']['authentication']['username'] = node['rsc_mongodb']['user']
 node.default['mongodb']['authentication']['password'] = node['rsc_mongodb']['password']

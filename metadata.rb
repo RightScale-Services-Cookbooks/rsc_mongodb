@@ -111,7 +111,7 @@ attribute 'rsc_mongodb/user',
   required: 'optional',
   category: 'MongoDB',
   type: 'string',
-  recipes: ['rsc_mongodb::volume_default','rsc_mongodb::add_to_replicaset']
+  recipes: ['rsc_mongodb::volume_default', 'rsc_mongodb::add_to_replicaset']
 
 attribute 'rsc_mongodb/password',
   display_name: 'MongoDB Password',
@@ -119,4 +119,4 @@ attribute 'rsc_mongodb/password',
   required: 'optional',
   category: 'MongoDB',
   type: 'string',
-  recipes: ['rsc_mongodb::volume_default','rsc_mongodb::add_to_replicaset']
+  recipes: ['rsc_mongodb::volume_default', 'rsc_mongodb::add_to_replicaset']
