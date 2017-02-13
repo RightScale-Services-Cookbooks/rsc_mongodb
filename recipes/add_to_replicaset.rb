@@ -34,7 +34,7 @@ machine_tag "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}" do
 end
 
 Chef::Log.info 'Searching for mongodb nodes'
-replicaset_hosts = tag_search(node, "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}")
+replicaset_hosts = tag_search(node, "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']} mongodb:#{node['rsc_mongodb']['replicaset']}=PRIMARY")
 
 ip_address = replicaset_hosts[1]['server:private_ip_0'].first.value
 Chef::Log.info "Host ip: #{ip_address}"
@@ -47,6 +47,16 @@ end
 
 execute 'configure_mongo' do
   command "/usr/bin/mongo -u #{node['rsc_mongodb']['user']} -p #{node['rsc_mongodb']['password']} --authenticationDatabase admin --host #{node['rsc_mongodb']['replicaset']}/#{ip_address} /tmp/mongoconfig.js"
+end
+
+service 'mongodb' do
+  action :stop
+end
+
+execute 'rm -fr /var/lib/mongodb/*'
+
+service 'mongodb' do
+  action :start
 end
 
 Chef::Log.info "Node's Current IP: #{node['cloud']['private_ips'][0]}"

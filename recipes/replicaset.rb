@@ -22,6 +22,7 @@ class Chef::Recipe
 end
 
 include_recipe 'machine_tag::default'
+include_recipe 'mongodb::mongo_gem'
 
 # store host info for each member
 Chef::Log.info 'Searching for mongodb nodes'
@@ -55,12 +56,28 @@ file '/tmp/mongoconfig.js' do
   content "rs.initiate(#{rs_config});"
 end
 
+Chef::Log.info "executing replica set"
 execute 'configure_mongo' do
   command '/usr/bin/mongo /tmp/mongoconfig.js'
 end
-# since we are using keyfile we need client side authentication
-node.override['mongodb']['mongos_create_admin'] = true
-node.override['mongodb']['authentication']['username'] = node['rsc_mongodb']['user']
-node.override['mongodb']['authentication']['password'] = node['rsc_mongodb']['password']
 
-include_recipe 'mongodb::user_management'
+Chef::Log.info "adding users to replica set"
+# since we are using keyfile we need client side authentication
+ruby_block 'add-admin-user' do
+  block do
+    require 'mongo'
+    connection = Mongo::MongoClient.new(
+      '127.0.0.1',
+      27017,
+      connect_timeout: 15,
+      slave_ok: true
+    )
+    admin = connection.db('admin')
+    db = connection.db('admin')
+    db.add_user(node['rsc_mongodb']['user'], node['rsc_mongodb']['password'], false, roles: %w(userAdminAnyDatabase dbAdminAnyDatabase clusterAdmin))
+  end
+end
+
+machine_tag "mongodb:#{node['rsc_mongodb']['replicaset']}=PRIMARY" do
+  action :create
+end
