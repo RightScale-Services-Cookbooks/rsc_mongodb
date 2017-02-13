@@ -58,3 +58,9 @@ end
 execute 'configure_mongo' do
   command '/usr/bin/mongo /tmp/mongoconfig.js'
 end
+# since we are using keyfile we need client side authentication
+node.override['mongodb']['mongos_create_admin'] = true
+node.override['mongodb']['authentication']['username'] = node['rsc_mongodb']['user']
+node.override['mongodb']['authentication']['password'] = node['rsc_mongodb']['password']
+
+include_recipe 'mongodb::user_management'
