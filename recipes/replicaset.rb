@@ -51,14 +51,24 @@ rs_config = rs_config.to_s + "     ]
 
 Chef::Log.info rs_config.to_s
 ## initiate replica set , replica set name is already in the config
+if ::File.exist?('/var/lib/mongodb/.admin_created')
+  file '/tmp/mongoconfig.js' do
+    content "rs.reconfig(#{rs_config},{ force: false });"
+  end
 
-file '/tmp/mongoconfig.js' do
-  content "rs.initiate(#{rs_config});"
-end
+  Chef::Log.info 'executing replica set'
+  execute 'configure_mongo' do
+    command "/usr/bin/mongo --username #{node['rsc_mongodb']['user']} --password #{node['rsc_mongodb']['password']} admin /tmp/mongoconfig.js"
+  end
+else
+  file '/tmp/mongoconfig.js' do
+    content "rs.initiate(#{rs_config});"
+  end
 
-Chef::Log.info 'executing replica set'
-execute 'configure_mongo' do
-  command '/usr/bin/mongo /tmp/mongoconfig.js'
+  Chef::Log.info 'executing replica set'
+  execute 'configure_mongo' do
+    command '/usr/bin/mongo /tmp/mongoconfig.js'
+  end
 end
 
 Chef::Log.info 'adding users to replica set'
@@ -75,11 +85,19 @@ ruby_block 'add-admin-user' do
     admin = connection.db('admin')
     cmd = BSON::OrderedHash.new
     cmd['replSetGetStatus'] = 1
-    result = admin.command(cmd)
-    Chef::Log.info result
+    @result = admin.command(cmd)
+    Chef::Log.info @result
+    sleep_counter = 2
+    while @result['members'].select { |a| a['self'] && a['stateStr'] == 'PRIMARY' }.count == 0 do
+      Chef::Log.info "No Primary Members, sleeping:#{sleep_counter}, \nresult:#{@result}"
+      sleep sleep_counter
+      @result = admin.command(cmd)
+      sleep_counter+=2
+    end
     db = connection.db('admin')
     db.add_user(node['rsc_mongodb']['user'], node['rsc_mongodb']['password'], false, roles: %w(userAdminAnyDatabase dbAdminAnyDatabase clusterAdmin))
-  end
+    ::FileUtils.touch('/var/lib/mongodb/.admin_created')
+  end unless ::File.exist?('/var/lib/mongodb/.admin_created')
 end
 
 machine_tag "mongodb:PRIMARY=#{node['rsc_mongodb']['replicaset']}" do
