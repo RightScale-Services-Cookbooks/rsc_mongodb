@@ -73,6 +73,10 @@ ruby_block 'add-admin-user' do
       slave_ok: true
     )
     admin = connection.db('admin')
+    cmd = BSON::OrderedHash.new
+    cmd['replSetGetStatus'] = 1
+    result = admin.command(cmd)
+    Chef::Log.info result
     db = connection.db('admin')
     db.add_user(node['rsc_mongodb']['user'], node['rsc_mongodb']['password'], false, roles: %w(userAdminAnyDatabase dbAdminAnyDatabase clusterAdmin))
   end
