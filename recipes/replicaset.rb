@@ -76,15 +76,9 @@ Chef::Log.info 'adding users to replica set'
 ruby_block 'add-admin-user' do
   block do
     require 'mongo'
-    connection = Mongo::MongoClient.new(
-      '127.0.0.1',
-      27017,
-      connect_timeout: 15,
-      slave_ok: true
-    )
+    connection = Mongo::MongoClient.new('127.0.0.1',27017,connect_timeout: 15,slave_ok: true )
     admin = connection.db('admin')
-    cmd = BSON::OrderedHash.new
-    cmd['replSetGetStatus'] = 1
+    cmd = BSON::OrderedHash['replSetGetStatus',1]
     @result = admin.command(cmd)
     Chef::Log.info @result
     sleep_counter = 2
@@ -94,8 +88,7 @@ ruby_block 'add-admin-user' do
       @result = admin.command(cmd)
       sleep_counter+=2
     end
-    db = connection.db('admin')
-    db.add_user(node['rsc_mongodb']['user'], node['rsc_mongodb']['password'], false, roles: %w(userAdminAnyDatabase dbAdminAnyDatabase clusterAdmin))
+    admin.add_user(node['rsc_mongodb']['user'], node['rsc_mongodb']['password'], false, roles: %w(userAdminAnyDatabase dbAdminAnyDatabase clusterAdmin))
     ::FileUtils.touch('/var/lib/mongodb/.admin_created')
   end unless ::File.exist?('/var/lib/mongodb/.admin_created')
 end
