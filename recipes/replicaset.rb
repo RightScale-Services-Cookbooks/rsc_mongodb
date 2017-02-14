@@ -41,7 +41,9 @@ rs_config = "config = {
 replicaset_hosts.each do |server|
   ip_address = server['server:private_ip_0'].first.value + ':27017'
   Chef::Log.info ip_address.to_s
-  rs_config = rs_config.to_s + "{_id: #{host_id}, host: \'#{ip_address}\'},"
+  priority = 0.5
+  priority = 1 if ip_address == node['ipaddress']
+  rs_config = rs_config.to_s + "{_id: #{host_id}, host: \'#{ip_address}\',priority:#{priority}},"
   host_id += 1
 end
 
@@ -90,7 +92,10 @@ ruby_block 'add-admin-user' do
     end
     admin.add_user(node['rsc_mongodb']['user'], node['rsc_mongodb']['password'], false, roles: %w(userAdminAnyDatabase dbAdminAnyDatabase clusterAdmin))
     ::FileUtils.touch('/var/lib/mongodb/.admin_created')
-  end unless ::File.exist?('/var/lib/mongodb/.admin_created')
+  end
+  not_if do
+    ::File.exist?('/var/lib/mongodb/.admin_created')
+  end
 end
 
 machine_tag "mongodb:PRIMARY=#{node['rsc_mongodb']['replicaset']}" do
