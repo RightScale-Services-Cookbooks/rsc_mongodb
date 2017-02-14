@@ -24,12 +24,10 @@ end
 include_recipe 'machine_tag::default'
 include_recipe 'mongodb::mongo_gem'
 
-# store host info for each member
-Chef::Log.info 'Searching for mongodb nodes'
+Chef::Log.info 'Searching for mongodb nodes to store'
 replicaset_hosts = tag_search(node, "mongodb:replicaset=#{node['rsc_mongodb']['replicaset']}")
 
-# debug
-Chef::Log.info "ReplicaSet #{replicaset_hosts}"
+Chef::Log.info "Debug:ReplicaSet #{replicaset_hosts}"
 
 # id for each host as it's added.
 host_id = 0
@@ -42,7 +40,7 @@ replicaset_hosts.each do |server|
   ip_address = server['server:private_ip_0'].first.value + ':27017'
   Chef::Log.info ip_address.to_s
   priority = 0.5
-  priority = 1 if ip_address == node['ipaddress']
+  priority = 1 if server['server:private_ip_0'].first.value == node['ipaddress'].to_s
   rs_config = rs_config.to_s + "{_id: #{host_id}, host: \'#{ip_address}\',priority:#{priority}},"
   host_id += 1
 end
@@ -54,8 +52,9 @@ rs_config = rs_config.to_s + "     ]
 Chef::Log.info rs_config.to_s
 ## initiate replica set , replica set name is already in the config
 if ::File.exist?('/var/lib/mongodb/.admin_created')
+  Chef::Log.info 'Replica previously configured, rs.reconfig running'
   file '/tmp/mongoconfig.js' do
-    content "rs.reconfig(#{rs_config},{ force: false });"
+    content "rs.reconfig(#{rs_config},{ force: true });"
   end
 
   Chef::Log.info 'executing replica set'
