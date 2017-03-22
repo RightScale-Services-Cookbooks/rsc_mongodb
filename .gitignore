@@ -1,4 +1,5 @@
 .vagrant
+knife.rb
 Berksfile.lock
 *~
 *#
@@ -13,5 +14,6 @@ Gemfile.lock
 bin/*
 .bundle/*
 .kitchen/*
-
+syntaxcache/
 .kitchen.local.yml
+berks-cookbooks/
