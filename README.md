@@ -7,7 +7,8 @@ Provides recipes for managing volumes on a Server in a RightScale supported clou
 * Creation of a replicaset with or without volume support (volumes required for backup and restore functionality)
 * Taking backups of volumes
 
-#Use Cases
+### Use Cases 
+
 Replicaset without volume support.
  - Set use_storage and restore_from_backup inputs to false and boot 3 nodes.
  - Once operational, on a single node execute the "rsc_mongodb::replicaset" recipe.
