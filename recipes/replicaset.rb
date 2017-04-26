@@ -93,7 +93,7 @@ ruby_block 'add-admin-user' do
     ::FileUtils.touch('/var/lib/mongodb/.admin_created')
   end
   not_if do
-    ::File.exist?('/var/lib/mongodb/.admin_created')
+    node['rsc_mongodb']['restore_from_backup'] =='true'
   end
 end
 
