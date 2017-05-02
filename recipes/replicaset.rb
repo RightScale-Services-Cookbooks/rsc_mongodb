@@ -51,7 +51,7 @@ rs_config = rs_config.to_s + "     ]
 
 Chef::Log.info rs_config.to_s
 ## initiate replica set , replica set name is already in the config
-if ::File.exist?('/var/lib/mongodb/.admin_created')
+if node['rsc_mongodb']['restore_from_backup'] == 'true' 
   Chef::Log.info 'Replica previously configured, rs.reconfig running'
   file '/tmp/mongoconfig.js' do
     content "rs.reconfig(#{rs_config},{ force: true });"
