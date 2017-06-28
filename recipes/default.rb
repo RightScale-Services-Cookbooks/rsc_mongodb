@@ -76,7 +76,7 @@ if node['rsc_mongodb']['use_storage'] == 'true' && node['rsc_mongodb']['restore_
   cron 'mongodb-backup' do
     minute  '0'
     hour    '*/1'
-    command 'sleep $[RANDOM%300];/usr/bin/mongodb_backup.sh'
+    command 'sleep $[RANDOM\%300];/usr/bin/mongodb_backup.sh'
     user    'root'
   end
   # mongo --quiet --eval "d=db.isMaster(); print( d['ismaster'] );"
