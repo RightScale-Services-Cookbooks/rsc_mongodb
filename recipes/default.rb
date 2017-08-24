@@ -39,9 +39,9 @@ include_recipe 'machine_tag::default'
 
 case node['platform']
 when 'ubuntu'
-  file '/etc/apt/sources.list.d/mongodb-org-node['rsc_mongodb']['mongo_version'].list' do
+  file "/etc/apt/sources.list.d/mongodb-org-#{node['rsc_mongodb']['mongo_version']}.list" do
     action :create_if_missing
-    content 'deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/node['rsc_mongodb']['mongo_version'] multiverse'
+    content "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/#{node['rsc_mongodb']['mongo_version']} multiverse"
   end
 end
 
