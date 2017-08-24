@@ -127,7 +127,6 @@ attribute 'rsc_mongodb/mongo_version',
   required: 'required',
   category: 'MongoDB',
   type: 'string',
-  default: '3.0'
-  choice: %w(3.0 3.4)
-
+  default: '3.0',
+  choice: %w(3.0 3.4),
   recipes: ['rsc_mongodb::default']
