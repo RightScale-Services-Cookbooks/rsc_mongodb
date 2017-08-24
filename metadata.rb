@@ -5,7 +5,7 @@ maintainer_email 'premium@rightscale.com'
 license          'Apache 2.0'
 description      'Installs/Configures Mongo DB'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '2.0.4'
+version          '2.0.5'
 chef_version '>= 12.9'
 issues_url 'https://github.com/RightScale-Services-Cookbooks/rsc_mondodb/issues'
 source_url 'https://github.com/RightScale-Services-Cookbooks/rsc_mondodb'
@@ -120,3 +120,14 @@ attribute 'rsc_mongodb/password',
   category: 'MongoDB',
   type: 'string',
   recipes: ['rsc_mongodb::volume_default', 'rsc_mongodb::add_to_replicaset']
+
+attribute 'rsc_mongodb/mongo_version',
+  display_name: 'MongoDB Version',
+  description: 'mongo version 3.0 or 3.4',
+  required: 'required',
+  category: 'MongoDB',
+  type: 'string',
+  default: '3.0'
+  choice: %w(3.0 3.4)
+
+  recipes: ['rsc_mongodb::default']

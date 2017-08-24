@@ -6,3 +6,4 @@ default['build-essential']['compile_time'] = true
 default['mongodb']['config']['keyFile'] = '/etc/mongodb_keyfile'
 default['rsc_mongodb']['user'] = 'root'
 default['rsc_mongodb']['password'] = 'rootpass'
+default['rsc_mongodb']['mongo_version'] = '3.0'
