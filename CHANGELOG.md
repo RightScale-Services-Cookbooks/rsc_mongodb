@@ -3,6 +3,11 @@ rsc_mongodb Cookbook CHANGELOG
 
 This file is used to list changes made in each version of the rsc_mongodb cookbook.
 
+v2.0.5
+------
+  - adding mongo version 3.4 as an input
+  - matching version with mongodb servertemplate
+
 v2.0.2
 -----
   - intiate replica set if block fixed
